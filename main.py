@@ -126,10 +126,11 @@ class Algoth(object):
     hist: int = None
 
     def __new__(cls, *args, **kwargs):
-        if args[0] in cls.attrs:
-            return cls.attrs[args[0]]
-        cls.attrs[args[0]] = object.__new__(cls)
-        return cls.attrs[args[0]]
+        #print(args)
+        if args in cls.attrs:
+            return cls.attrs[args]
+        cls.attrs[args] = object.__new__(cls)
+        return cls.attrs[args]
 
     def __init__(self, n):
         self.n = n
@@ -148,12 +149,21 @@ class Algoth(object):
         k = 1
         for i in range(1, self.n + 1):
             k *= i
+        print(f"{self.n}!={k}")
         return k
 
 
 class A(Algoth):
     m = 0
+    attrs = {}
     hist: int = None
+
+    def __new__(cls, *args, **kwargs):
+        #print(args)
+        if args in cls.attrs:
+            return cls.attrs[args]
+        cls.attrs[args] = object.__new__(cls)
+        return cls.attrs[args]
 
     def __init__(self, n, m):
         super(A, self).__init__(n)
@@ -161,6 +171,7 @@ class A(Algoth):
 
     def __call__(self, *args, **kwargs):
         k = int(super(A, self).__call__() / Algoth(self.n - self.m)())
+        self.hist = k
         return k
 
 
@@ -172,29 +183,27 @@ class P(Algoth):
 
 
 class Pr(Algoth):
+    attrs = {}
     hist: int = None
     args = []
 
+    def __new__(cls, *args, **kwargs):
+        #print(args)
+        if args in cls.attrs:
+            return cls.attrs[args]
+        cls.attrs[args] = object.__new__(cls)
+        return cls.attrs[args]
+
     def __init__(self, n, *args):
         super(Pr, self).__init__(n)
-        self.args = [Algoth(x) for x in args]
+        self.args = [Algoth(x)() for x in args]
 
     def __call__(self, *args, **kwargs):
-
         k = super(Pr, self).__call__()
-        k /= reduce((lambda x, y: x() * y()), self.args)
+        k /= reduce((lambda x, y: x * y), self.args)
         self.hist = int(k)
         return int(k)
 
     def __add__(self, other):
         return
 
-
-p = A(10, 2)
-
-g = P(5)
-k = P(5)
-f = P(6)
-print(id(P(5)), id(k), k, f, id(f))
-print(p())
-print(p.__dict__)
