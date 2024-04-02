@@ -215,11 +215,17 @@ class SevenTask:
         return ""
 
 
+class EigthTask:
+    def __init__(self):
+
 
 
 
 
 if __name__ == "__main__":
-    my_task = FiveTask(0.85, 0.997, eps=0.01)
-    my_task.solve()
+    my_five_task = FiveTask(0.85, 0.997, eps=0.01)
+    my_five_task.solve()
+    my_seven_task = SevenTask(4, 4, 4, 5, (2, 4), (1, 2), (4, 1), (1, 5))
+    print(my_seven_task)
+    my_eight_task = EightTask()
 
