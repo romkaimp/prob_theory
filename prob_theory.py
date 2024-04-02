@@ -135,14 +135,25 @@ class Pr(Algoth):
         return
 
 class MuavrLaplace:
-    def __init__(self, n, p, k):
+    def __init__(self, n: int, p: float, k: int | None):
         self.n = n
         self.p = p
         self.q = 1 - p
         self.k = k
 
+    def integrate(self, k1, k2):
+        x1 = (k1 - self.n * self.p)/pow(self.n * self.p * self.q, 1/2)
+        x2 = (k2 - self.n * self.p) / pow(self.n * self.p * self.q, 1 / 2)
+        def F(x):
+            return (1/pow(2*pi, 1/2)) * exp(-pow(x, 2)/2)
+
+        return quad(F, x1, x2)
+
     def __repr__(self):
         return self.__call__
 
     def __call__(self, *args, **kwargs):
-        return
+        return ((1/(pow(2 * pi * self.n * self.p * self.q, 1/2)))
+                * exp(
+                    -(pow(self.k - self.n * self.p, 2))
+                    / (2 * self.n * self.p * self.q)))
