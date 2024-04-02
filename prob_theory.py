@@ -1,6 +1,7 @@
 from functools import reduce
 from scipy.integrate import quad
 from math import pi, exp
+from matplotlib.pyplot import plot, show, grid, axvline, xticks, yticks, axhline
 from numpy import array
 import asyncio
 
@@ -135,25 +136,63 @@ class Pr(Algoth):
         return
 
 class MuavrLaplace:
-    def __init__(self, n: int, p: float, k: int | None):
+    def __init__(self, n: int | float | None = None, p: float | None = None, k: int | None | float = None):
         self.n = n
         self.p = p
-        self.q = 1 - p
+        if p is not None:
+            self.q = 1 - p
         self.k = k
 
-    def integrate(self, k1, k2):
-        x1 = (k1 - self.n * self.p)/pow(self.n * self.p * self.q, 1/2)
-        x2 = (k2 - self.n * self.p) / pow(self.n * self.p * self.q, 1 / 2)
+    def integrate(self, k1: float | None = None, k2: float | None = None, x: float | None = None) -> float:
+        if k2 is None:
+            if x is None:
+                x1 = -10
+                x2 = (k1 - self.n * self.p)/pow(self.n * self.p * self.q, 1/2)
+            else:
+                x1 = -10
+                x2 = x
+        else:
+            x1 = (k1 - self.n * self.p)/pow(self.n * self.p * self.q, 1/2)
+            x2 = (k2 - self.n * self.p) / pow(self.n * self.p * self.q, 1 / 2)
+
         def F(x):
             return (1/pow(2*pi, 1/2)) * exp(-pow(x, 2)/2)
 
-        return quad(F, x1, x2)
+        return quad(F, x1, x2)[0]
+
+    def plot(self):
+        limits = (-10, 1000)
+        acc = 4
+        maxi = 0
+        xm = 0
+        X = [x/acc for x in range(limits[0]*acc, limits[1]*acc)]
+        print(X)
+        Y = []
+        for x in range(limits[0]*acc, limits[1]*acc):
+            y = self.integrate(x/acc, (x+1)/acc)
+            if y > maxi:
+                maxi = y
+                xm = x/acc
+            Y.append(y)
+        a = plot(X, Y)
+        axhline(y=maxi, color="b")
+        axvline(x=xm, color="r")
+        yticks(ticks=(maxi, ), labels=(str(round(maxi, 5)), ), minor=True, rotation=20)
+        xticks(ticks=(xm, ), labels=(str(xm), ), minor=True, rotation=45)
+        grid(True)
+        show()
 
     def __repr__(self):
-        return self.__call__
+        return str(self.__call__())
 
     def __call__(self, *args, **kwargs):
+        if self.k is None:
+            print("here")
+            self.plot()
+            return ""
         return ((1/(pow(2 * pi * self.n * self.p * self.q, 1/2)))
                 * exp(
                     -(pow(self.k - self.n * self.p, 2))
                     / (2 * self.n * self.p * self.q)))
+
+MuavrLaplace(1000, 0.67)
