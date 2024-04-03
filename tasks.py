@@ -7,6 +7,7 @@ from typing import Callable
 
 
 class FiveTask:
+    """задача с распределением Муавра-Лапласа"""
     def __init__(self, p, prob, n: None | float = None, eps: None | float = None):
         """n - количество испытаний, чтобы с в-тью prob отклонение от p не превышало eps,
         где n/eps - неизвестно (просто не вводите число)"""
@@ -215,17 +216,74 @@ class SevenTask:
         return ""
 
 
-class EigthTask:
-    def __init__(self):
+class EightTask:
+    """восьмая задача про теорему Байеса"""
+    a: tuple = None
 
+    def __init__(self, n, l, a: tuple):
+        self.n = n
+        self.l = l
+        self.a = a
+        self.p_a = 0
 
+    @staticmethod
+    def polinomial(n: int, *args) -> float:
+        length: int = len(args)//2
+        k: list[int] = list(args[0:length])
+        p: list[float] = list(args[length:len(args)])
+        if n != sum(k):
+            k.append(n-sum(k))
+            p.append(1-sum(p))
+        return Pr(n, *k)()*reduce(lambda x, y: x*y, [pow(p[i], k[i]) for i in range(len(p))])
 
+    def solve_1(self):
+        print("with returning")
+        self.p_a = 0
+        for k1 in range(0, self.n + 1):
+            for k2 in range(0, self.n - k1 + 1):
+                if k1+k2 == self.n:
+                    p_h_i = self.polinomial(self.n, k1, k2, 1/2, 1/2)
+                    p_a_h_i = self.polinomial(self.l, self.a[0], self.a[1], k1/self.n, k2/self.n)
+                    self.p_a += p_h_i * p_a_h_i
+        maxi = 0
+        most_prob = ()
+        for k1 in range(0, self.n + 1):
+            for k2 in range(0, self.n - k1 + 1):
+                if k1+k2 == self.n:
+                    p_h_i = self.polinomial(self.n, k1, k2, 1/2, 1/2)
+                    p_a_h_i = self.polinomial(self.l, self.a[0], self.a[1], k1/self.n, k2/self.n)
+                    if p_h_i*p_a_h_i/self.p_a > maxi:
+                        maxi = p_h_i*p_a_h_i/self.p_a
+                        most_prob = (k1, k2, )
+        print(round(maxi, 3), most_prob)
+        print("without  returning")
+
+        self.p_a = 0
+        for k1 in range(0, self.n + 1):
+            for k2 in range(0, self.n - k1 + 1):
+                if k1+k2 == self.n:
+                    p_h_i = self.polinomial(self.n, k1, k2, 1/2, 1/2)
+                    p_a_h_i = C(k1, self.a[0])*C(k2, self.a[1])/C(self.n, self.l)
+                    self.p_a += p_h_i * p_a_h_i
+        maxi = 0
+        most_prob = ()
+        for k1 in range(0, self.n + 1):
+            for k2 in range(0, self.n - k1 + 1):
+                if k1+k2 == self.n:
+                    p_h_i = self.polinomial(self.n, k1, k2, 1/2, 1/2)
+                    p_a_h_i = C(k1, self.a[0])*C(k2, self.a[1])/C(self.n, self.l)
+                    if p_h_i*p_a_h_i/self.p_a > maxi:
+                        maxi = p_h_i*p_a_h_i/self.p_a
+                        most_prob = (k1, k2, )
+        print(round(maxi, 3), most_prob)
 
 
 if __name__ == "__main__":
-    my_five_task = FiveTask(0.85, 0.997, eps=0.01)
-    my_five_task.solve()
-    my_seven_task = SevenTask(4, 4, 4, 5, (2, 4), (1, 2), (4, 1), (1, 5))
-    print(my_seven_task)
-    my_eight_task = EightTask()
+    #my_five_task = FiveTask(0.85, 0.997, eps=0.01)
+    #my_five_task.solve()
+    #my_seven_task = SevenTask(4, 4, 4, 5, (2, 4), (1, 2), (4, 1), (1, 5))
+    #print(my_seven_task)
+    #my_eight_task = EightTask(12, 4, (3, 1, ))
+    #my_eight_task.solve_1()
+    pass
 
