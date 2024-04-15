@@ -1,5 +1,5 @@
 import prob_theory
-from prob_theory import C, Pr
+from prob_theory import C, Pr, MuavrLaplace
 from PIL import Image
 from math import sqrt
 from functools import reduce
@@ -8,7 +8,7 @@ from typing import Callable
 
 class FiveTask:
     """задача с распределением Муавра-Лапласа"""
-    def __init__(self, p, prob, n: None | float = None, eps: None | float = None):
+    def __init__(self, p, prob: None | float = None, n: None | int = None, eps: None | float = None):
         """n - количество испытаний, чтобы с в-тью prob отклонение от p не превышало eps,
         где n/eps - неизвестно (просто не вводите число)"""
         self.n = n
@@ -17,30 +17,43 @@ class FiveTask:
         self.eps = eps
         if eps is None:
             self.type = "2"
-        else:
+        elif n is None:
             self.type = "1"
+        else:
+            self.type = "3"
 
-    def __solve_1__(self):
+    def __solve_1(self):
         for i in range(0, 100000):
             j = i/3
             x = self.eps * sqrt(j) / sqrt(self.p * (1 - self.p))
-            if (n:=prob_theory.MuavrLaplace().integrate(x=x)) > (self.prob + 1)/2:
+            if (n:=MuavrLaplace().integrate(x=x)) > (self.prob + 1)/2:
                 print(f"в-ть = {n}", f"проведено {j} испытаний")
                 break
 
-    def __solve_2__(self):
+    def __solve_2(self):
         for i in range(0, 10000):
             j = i/10000
             x = j * sqrt(self.n) / sqrt(self.p * (1 - self.p))
-            if n:=prob_theory.MuavrLaplace().integrate(x=x) > (self.prob + 1)/2:
+            if n:=MuavrLaplace().integrate(x=x) > (self.prob + 1)/2:
                 print(f"в-ть = {n}", f"eps ~ {j} ")
+                break
+
+    def __solve_3(self):
+        task = MuavrLaplace(self.n, self.p)
+
+        for i in range(1, self.n * 4):
+            j = i/4
+            if k:=task.integrate(j) >= self.eps:
+                print(f"При n={j}, в-ть больше {self.eps}: ={k}")
                 break
 
     def solve(self):
         if self.type == "1":
-            return self.__solve_1__()
+            return self.__solve_1()
+        elif self.type == "2":
+            return self.__solve_2()
         else:
-            return self.__solve_2__()
+            return self.__solve_3()
 
     def __doc__(self):
         filename = "5task.png"
@@ -114,10 +127,11 @@ class SevenTask:
         self.table = []
         print("\neps\\nu -raspredelenie s vozvratom\n")
         summ = 0
-        for i in range(0, max(self._n1_, self._m_) + 1):
+        for i in range(0, min(self._n1_, self._m_) + 1):
             row = []
-            for j in range(0, max(self._n2_, self._m_) + 1):
+            for j in range(0, min(self._n2_, self._m_) + 1):
                 if i + j < self._m_+1:
+                    #print(f"{i}, {j}, PR={Pr(self._m_, i, j, self._m_ - i - j)()}")
                     sumc = round(
                         Pr(self._m_, i, j, self._m_ - i - j)() *
                         pow(self._n1_ / self._n_, i) *
@@ -128,15 +142,16 @@ class SevenTask:
                 summ += sumc
                 row.append(sumc)
             self.table.append(row)
+
         self._matrix_print_(self.table)
 
         print("\nbez vozvrata\n")
 
         self.table2 = []
         summ = 0
-        for i in range(max(self._n1_, self._m_) + 1):
+        for i in range(min(self._n1_, self._m_) + 1):
             row = []
-            for j in range(0, max(self._n2_, self._m_) + 1):
+            for j in range(0, min(self._n2_, self._m_) + 1):
                 if i + j >= self._m_ - self._n3_ and i + j <= self._m_:
                     sumc = round(C(self._n1_, i) * C(self._n2_, j) * C(self._n3_, self._m_ - i - j) / C(self._n_, self._m_), 3)
                 else:
@@ -144,12 +159,15 @@ class SevenTask:
                 summ += sumc
                 row.append(sumc)
             self.table2.append(row)
+
         self._matrix_print_(self.table2)
 
     def function(self):
-        self.tablef1 = [[0 for i in range(self._m_+1)] for j in range(self._m_+1)]
-        for i in range(self._m_+1):
-            for j in range(self._m_+1):
+        self.tablef1 = [[0 for i in range(min(self._n2_, self._m_) + 1)] for j in range(min(self._n1_, self._m_) + 1)]
+        #self._matrix_print_(self.tablef1)
+        for i in range(min(self._n1_, self._m_) + 1):
+            for j in range(min(self._n2_, self._m_)+1):
+                #print(i, j)
                 for k in range(0, i):
                     for n in range(0, j):
                         self.tablef1[i][j] += self.table[k][n]
@@ -159,9 +177,9 @@ class SevenTask:
         for i in self.dots:
             print(self.tablef1[i[0]][i[1]])
 
-        self.tablef2 = [[0 for i in range(self._m_+1)] for j in range(self._m_+1)]
-        for i in range(self._m_+1):
-            for j in range(self._m_+1):
+        self.tablef2 = [[0 for i in range(min(self._n2_, self._m_) + 1)] for j in range(min(self._n1_, self._m_)+1)]
+        for i in range(min(self._n1_, self._m_) + 1):
+            for j in range(min(self._n2_, self._m_)+1):
                 for k in range(0, i):
                     for n in range(0, j):
                         self.tablef2[i][j] += self.table2[k][n]
@@ -279,9 +297,9 @@ class EightTask:
 
 
 if __name__ == "__main__":
-    #my_five_task = FiveTask(0.85, 0.997, eps=0.01)
-    #my_five_task.solve()
-    #my_seven_task = SevenTask(4, 4, 4, 5, (2, 4), (1, 2), (4, 1), (1, 5))
+    my_five_task = FiveTask(n=500, p=0.3, eps=0.95)
+    my_five_task.solve()
+    #my_seven_task = SevenTask(3, 7, 4, 6, (2, 2), (1, 3), (1, 4), (3, 5))
     #print(my_seven_task)
     #my_eight_task = EightTask(12, 4, (3, 1, ))
     #my_eight_task.solve_1()

@@ -4,8 +4,8 @@ from math import pi, exp, sqrt
 from matplotlib.pyplot import plot, show, grid, axvline, xticks, yticks, axhline
 from typing import Callable
 from PIL import Image
-from numpy import array
-import asyncio
+import time
+from datetime import datetime
 
 #"""4 задача"""
 #print("1:", bernulli(6, 2, 0.2))
@@ -51,7 +51,7 @@ class Mediator:
 
 class Algoth(object):
     attrs = {}
-    n = None
+    n: int = None
     priority = 10
     hist: int = None
 
@@ -62,26 +62,93 @@ class Algoth(object):
         cls.attrs[args] = object.__new__(cls)
         return cls.attrs[args]
 
-    def __init__(self, n):
+    def __init__(self, n: int):
         self.n = n
 
     def __repr__(self):
-        if self.hist:
-            return str(self.hist)
+        return str(self.n)
+        #if self.hist:
+        #    return str(self.hist)
+        #else:
+        #    return str(self.__call__())
+
+    def __str__(self):
+        return str(self.n)
+
+    def __call__(self, *args, **kwargs) -> int:
+        if len(args) == 0:
+            self.hist = self.factorial(*args)
+            k = self.hist
         else:
-            return str(self.__call__())
-
-    def __call__(self, *args, **kwargs):
-        self.hist = self.factorial(self.n)
-        return self.hist
-
-    def factorial(self, n):
-        k = 1
-        for i in range(1, self.n + 1):
-            k *= i
-        #print(f"{self.n}!={k}")
+            k = self.factorial(*args)
         return k
 
+    def factorial(self, start_from: int | Callable = 0) -> int:
+        summ = 1
+        if isinstance(start_from, Algoth):
+            k = start_from.n + 1
+        else:
+            k = start_from + 1
+        for i in range(k, self.n + 1):
+            summ *= i
+        #print(f"{self.n, start_from}!={summ}")
+        return summ
+
+    def __add__(self, other: int | Callable) -> int:
+        if isinstance(other, Algoth):
+            return self.__call__() + other.__call__()
+        else:
+            return self.__call__() + other
+
+    def __mul__(self, other: int | Callable) -> int:
+        if isinstance(other, Algoth):
+            return self.__call__() * other.__call__()
+        else:
+            return self.__call__() * other
+
+    def __rmul__(self, other: int | float | Callable) -> int:
+        if isinstance(other, Algoth):
+            return self.__call__() * other.__call__()
+        else:
+            return self.__call__() * other
+
+    def __int__(self):
+        return self.__call__()
+
+    def __truediv__(self, other):
+        if isinstance(other, Algoth):
+            r = other.__call__()
+            if r == 0:
+                raise ZeroDivisionError
+            return self.__call__() // r
+        else:
+            if other == 0:
+                raise ZeroDivisionError
+            return self.__call__() / other
+
+    def __rtruediv__(self, other):
+        if isinstance(other, Algoth):
+            return other.__call__() / self.__call__()
+        else:
+            return other / self.__call__()
+
+    def __lt__(self, other):
+        return self.__call__() < other
+
+    def __le__(self, other):
+        return self.__call__() <= other
+
+    def __eq__(self, other):
+        return self.__call__() == other
+
+    def __ne__(self, other):
+        return self.__call__() != other
+
+    def __gt__(self, other):
+        return self.__call__() > other
+
+    def __ge__(self, other):
+        return self.__call__() >= other
 
 class A(Algoth):
     m = 0
@@ -100,7 +167,7 @@ class A(Algoth):
         self.m = m
 
     def __call__(self, *args, **kwargs):
-        k = int(super(A, self).__call__() / Algoth(self.n - self.m)())
+        k = Algoth(self.n) / Algoth(self.n - self.m)
         self.hist = k
         return k
 
@@ -126,7 +193,7 @@ class Pr(Algoth):
 
     def __init__(self, n, *args):
         super(Pr, self).__init__(n)
-        self.args = [Algoth(x)() for x in args]
+        self.args = [Algoth(x) for x in args]
 
     def __call__(self, *args, **kwargs):
         if self.hist is not None: return self.hist
@@ -161,47 +228,6 @@ class C(Algoth):
         k /= reduce((lambda x, y: x * y), self.args)
         self.hist = int(k)
         return int(k)
-
-    def __add__(self, other: int | Callable) -> int:
-        if isinstance(other, Algoth):
-            return self.__call__() + other.__call__()
-        else:
-            return self.__call__() + other
-
-    def __mul__(self, other: int | Callable) -> int:
-        if isinstance(other, Algoth):
-            return self.__call__() * other.__call__()
-        else:
-            return self.__call__() * other
-
-    def __rmul__(self, other: int | float | Callable) -> int:
-        if isinstance(other, Algoth):
-            return self.__call__() * other.__call__()
-        else:
-            return self.__call__() * other
-
-    def __int__(self):
-        return self.__call__()
-
-    def __truediv__(self, other):
-        if isinstance(other, Algoth):
-            r = other.__call__()
-            if r == 0:
-                raise ZeroDivisionError
-            return self.__call__() / other.__call__()
-        else:
-            if other == 0:
-                raise ZeroDivisionError
-            return self.__call__() / other
-
-    def __rtruediv__(self, other):
-        k = self.__call__()
-        if k == 0:
-            raise ZeroDivisionError
-        if isinstance(other, Algoth):
-            return other.__call__() / k
-        else:
-            return other / self.__call__()
 
     @staticmethod
     def __doc__(self):
@@ -296,9 +322,12 @@ class MuavrLaplace:
                     / (2 * self.n * self.p * self.q)))
 
 
+def factorial(n):
+    summ = 1
+    for i in range(1, n+1):
+        summ*=i
+    return summ
+
 if __name__ == "__main__":
-    pass
-
-
-
-
+    task = MuavrLaplace(10000, 0.006)
+    print(1 - task.integrate(0, 81))
