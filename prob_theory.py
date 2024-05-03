@@ -100,7 +100,7 @@ class Algoth(object):
         else:
             return self.__call__() + other
 
-    def __mul__(self, other: int | Callable) -> int:
+    def __mul__(self, other: int | float | Callable) -> int:
         if isinstance(other, Algoth):
             return self.__call__() * other.__call__()
         else:
@@ -329,5 +329,15 @@ def factorial(n):
     return summ
 
 if __name__ == "__main__":
-    task = MuavrLaplace(10000, 0.006)
-    print(1 - task.integrate(0, 81))
+    #print(Algoth(5) == factorial(5)) #True; Algoht = factorial лучше использовать factorial
+    #print(P(5) == factorial(5)) #Перестановки без пвоторений
+    #print(Pr(6, 3, 2) == factorial(6) / (factorial(3) * factorial(2))) #Перестановки с повторениями
+    #print(A(4, 2) == factorial(4)/ factorial(2)) #Размещения без повторений
+    #print(C(5, 3) == factorial(5)/(factorial(3)*factorial(5-3))) #Сочетания без повторений из n по k
+    #print(Bernoulli(6, 3, 0.5) == C(6, 3) * pow(0.5, 3) * pow(1-0.5, 6-3))
+    ##Бернулли 6 испытаний, 3 успеха, вероятность успеха 0.5
+    #task = MuavrLaplace(10000, 0.006) #Инициализация n и p
+    #print(task.integrate(80)) #Интеграл от x=0 до x=80
+    ##при подстановке k=80 автоматически производится преобразование k = (80-np) / sqrt(npq)
+    #print(1 - task.integrate(0, 81))  #интеграл от k1=0 до k2=81
+    print((1/6)/(1-pow(5/6, 2)))

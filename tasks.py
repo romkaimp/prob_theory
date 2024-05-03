@@ -87,6 +87,35 @@ class SevenTask:
         for i in args:
             self.dots.append(i)
 
+    def mnogomerniy(self, bprint=False):
+        table = []
+        print("\neps\\nu\\k -raspredelenie s vozvratom\n")
+        summ = 0
+        for i in range(0, max(self._n1_, self._m_) + 1):
+            table_sm = []
+            for j in range(0, max(self._n2_, self._m_) + 1):
+                row = []
+                for k in range(0, max(self._n3_, self._m_) + 1):
+                    if i + j + k == self._m_:
+                        # print(f"{i}, {j}, PR={Pr(self._m_, i, j, self._m_ - i - j)()}")
+                        sumc = round(
+                            Pr(self._m_, i, j, k)() *
+                            pow(self._n1_ / self._n_, i) *
+                            pow(self._n2_ / self._n_, j) *
+                            pow(self._n3_ / self._n_, k), 3)
+                    else:
+                        sumc = 0
+                    summ += sumc
+                    row.append(sumc)
+                table_sm.append(row)
+                #print(table_sm)
+            table.append(table_sm)
+        #print(table)
+        #print(summ)
+        if bprint:
+            self._big_matrix_print(table, 3)
+        return table
+
     def initialize_dotes(self, a1, a2):
         self.dots.append((a1, a2, ))
 
@@ -106,9 +135,31 @@ class SevenTask:
 
     @staticmethod
     def _matrix_print_(matrix: list[list]):
+
         for i in matrix:
 
             print(" | ".join([str(x) for x in i]))
+        print("\n")
+
+    def _big_matrix_print(self, matrix: list[list[list]], n):
+        for i, j in enumerate(matrix):
+            print(f"i=:{i}\n")
+            if n>=4:
+                self._big_matrix_print(j, n-1)
+            else:
+                self._matrix_print_(j)
+        print("\n")
+
+    def p_summa_ochkov(self, weights: list[int | float]):
+        table = self.mnogomerniy()
+        klass = [0 for i in range(max(weights)*self._m_+1)]
+        for i in range(0, max(self._n1_, self._m_) + 1):
+            for j in range(0, max(self._n2_, self._m_) + 1 - i):
+                for k in range(0, max(self._n3_, self._m_) + 1 - i - j):
+                    klass[i*weights[0]+j*weights[1]+k*weights[2]] += table[i][j][k]
+        klass = [round(x, 3) for x in klass]
+        return klass
+
 
     def p_eps(self):
         print("EPS-raspredelenie i NU-raspredelenie")
@@ -127,9 +178,9 @@ class SevenTask:
         self.table = []
         print("\neps\\nu -raspredelenie s vozvratom\n")
         summ = 0
-        for i in range(0, min(self._n1_, self._m_) + 1):
+        for i in range(0, max(self._n1_, self._m_) + 1):
             row = []
-            for j in range(0, min(self._n2_, self._m_) + 1):
+            for j in range(0, max(self._n2_, self._m_) + 1):
                 if i + j < self._m_+1:
                     #print(f"{i}, {j}, PR={Pr(self._m_, i, j, self._m_ - i - j)()}")
                     sumc = round(
@@ -165,17 +216,17 @@ class SevenTask:
     def function(self):
         self.tablef1 = [[0 for i in range(min(self._n2_, self._m_) + 1)] for j in range(min(self._n1_, self._m_) + 1)]
         #self._matrix_print_(self.tablef1)
-        for i in range(min(self._n1_, self._m_) + 1):
+        for i in range(min(self._n1_, self._m_) + 1): #max
             for j in range(min(self._n2_, self._m_)+1):
                 #print(i, j)
                 for k in range(0, i):
                     for n in range(0, j):
                         self.tablef1[i][j] += self.table[k][n]
 
-
-        print("Frunction s vozvrasheniem")
-        for i in self.dots:
-            print(self.tablef1[i[0]][i[1]])
+        if len(self.dots)>0:
+            print("Frunction s vozvrasheniem")
+            for i in self.dots:
+                print(self.tablef1[i[0]][i[1]])
 
         self.tablef2 = [[0 for i in range(min(self._n2_, self._m_) + 1)] for j in range(min(self._n1_, self._m_)+1)]
         for i in range(min(self._n1_, self._m_) + 1):
@@ -184,9 +235,10 @@ class SevenTask:
                     for n in range(0, j):
                         self.tablef2[i][j] += self.table2[k][n]
 
-        print("Function bez vozvrasheniya")
-        for i in self.dots:
-            print(self.tablef2[i[0]][i[1]])
+        if len(self.dots)>0:
+            print("Function bez vozvrasheniya")
+            for i in self.dots:
+                print(self.tablef2[i[0]][i[1]])
 
     @staticmethod
     def mat(spis: list | dict, chisla: list | None = None):
@@ -208,9 +260,16 @@ class SevenTask:
             chisla = [[(i, j) for i in range(len(table))] for j in range(len(table))]
         summ = 0
         for i in range(len(table)):
-            for j in range(len(table)):
+            for j in range(len(table[0])):
                 summ += chisla[i][j][0]*chisla[i][j][1]*table[i][j]
         return summ
+
+    @staticmethod
+    def mat_list(llist: list[int]):
+        mat = 0
+        for i in range(len(llist)):
+            mat += llist[i] * i
+        return mat
 
     def characteristics(self):
         print("Meps", round(self.mat(self.vel1), 3))
@@ -297,11 +356,19 @@ class EightTask:
 
 
 if __name__ == "__main__":
-    my_five_task = FiveTask(n=500, p=0.3, eps=0.95)
-    my_five_task.solve()
-    #my_seven_task = SevenTask(3, 7, 4, 6, (2, 2), (1, 3), (1, 4), (3, 5))
+    # Пример задачи на картинке 5task
+    #my_five_task = FiveTask(n=500, p=0.3, eps=0.95)
+    #my_five_task.solve()
+
+    #Задача с распределением случайных величин
+    my_seven_task = SevenTask(2, 2, 1, 3, )
     #print(my_seven_task)
+    p = my_seven_task.p_summa_ochkov([1, 2, 3])
+    print("p=", p, "\np[4]=", p[4], "\nf[8.1]=", round(sum(p[0:9]), 3), "\np(e>=7)=", sum(p[7:]), "\nMe=", my_seven_task.mat_list(p))
+    #задача на формулу полной вероятности и теорему Байеса.
+    #n- общее количество шаров, i-количество взятых шаров
+    #(3, 1, ) - количество соответственно белых и чёрных шаров из выборки
     #my_eight_task = EightTask(12, 4, (3, 1, ))
-    #my_eight_task.solve_1()
-    pass
+    #my_eight_task.solve_1() #solve_2 не существует
+    #pass
 
