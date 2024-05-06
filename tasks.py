@@ -361,10 +361,10 @@ if __name__ == "__main__":
     #my_five_task.solve()
 
     #Задача с распределением случайных величин
-    my_seven_task = SevenTask(2, 2, 1, 3, )
-    #print(my_seven_task)
-    p = my_seven_task.p_summa_ochkov([1, 2, 3])
-    print("p=", p, "\np[4]=", p[4], "\nf[8.1]=", round(sum(p[0:9]), 3), "\np(e>=7)=", sum(p[7:]), "\nMe=", my_seven_task.mat_list(p))
+    my_seven_task = SevenTask(6, 4, 5, 4, )
+    print(my_seven_task)
+    #p = my_seven_task.p_summa_ochkov([1, 2, 3])
+    #print("p=", p, "\np[4]=", p[4], "\nf[8.1]=", round(sum(p[0:9]), 3), "\np(e>=7)=", sum(p[7:]), "\nMe=", my_seven_task.mat_list(p))
     #задача на формулу полной вероятности и теорему Байеса.
     #n- общее количество шаров, i-количество взятых шаров
     #(3, 1, ) - количество соответственно белых и чёрных шаров из выборки
